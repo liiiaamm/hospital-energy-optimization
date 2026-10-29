@@ -1,0 +1,27 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# --- Virtual Environments ---
+venv/
+env/
+.venv/
+.env
+
+# --- IDEs and Editors ---
+.vscode/
+.idea/
+
+# --- Operative System ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Logs y Temporal Solver files ---
+*.log
+solver_results.json
