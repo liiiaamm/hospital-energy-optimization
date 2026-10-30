@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who gets the power? Hospital blackout simulator</title>
+<meta name="description" content="A hospital loses grid power. Choose the blackout length, the generator budget and the priority between saving the most and leaving nobody in the dark, and watch the optimal plan play out hour by hour.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/sim.css">
+</head>
+<body>
+
+<header class="top">
+  <h1>Who gets the power?</h1>
+  <p class="lede">The grid is down. The hospital has a few diesel generators, a fixed budget to buy more, and six departments that all need electricity. Every plan below is the optimal answer of a mixed-integer program, solved in advance for 200 scenarios.</p>
+</header>
+
+<main>
+  <section class="console" aria-label="Simulator">
+    <div class="controls">
+      <fieldset class="control">
+        <legend>Blackout length</legend>
+        <div class="seg" id="segDuration"></div>
+      </fieldset>
+      <fieldset class="control">
+        <legend>Budget for new generators</legend>
+        <div class="budget">
+          <input type="range" id="budget" min="0" max="7" step="1" value="4" aria-describedby="budgetValue">
+          <output id="budgetValue"></output>
+        </div>
+      </fieldset>
+      <fieldset class="control priority">
+        <legend>Priority</legend>
+        <input type="range" id="lambda" min="0" max="4" step="1" value="4" aria-describedby="lambdaValue">
+        <div class="ends"><span>Nobody left in the dark</span><span>Most care, soonest</span></div>
+        <output id="lambdaValue" class="sr-only"></output>
+      </fieldset>
+    </div>
+
+    <div class="stage">
+      <div class="plan-wrap">
+        <svg id="plan" viewBox="0 0 820 470" role="img" aria-labelledby="planTitle">
+          <title id="planTitle">Floor plan of the hospital. Each department is lit in proportion to the power it receives this hour.</title>
+        </svg>
+      </div>
+
+      <aside class="plant" aria-label="Generators and fuel">
+        <h2>Generator yard</h2>
+        <div id="yard"></div>
+        <dl class="stats">
+          <div><dt>Critical care kept alive</dt><dd id="statSurvival">–</dd></div>
+          <div><dt>Spent on generators</dt><dd id="statSpent">–</dd></div>
+          <div><dt>Power in use now</dt><dd id="statLoad">–</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="timeline">
+      <div class="transport">
+        <button id="play" class="play" aria-label="Pause">Pause</button>
+        <input type="range" id="hour" min="1" max="48" step="1" value="1" aria-label="Hour of the blackout">
+      </div>
+      <div class="schedule-wrap">
+        <svg id="schedule" aria-label="Hour-by-hour coverage of each department"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="explain">
+    <div class="col">
+      <h2>What the optimiser is choosing</h2>
+      <p>Before the blackout it decides how many large, medium and small generators to buy within budget. During it, it decides every hour which generators run and what share \(x_{s,t}\) of each department's demand gets covered. Fuel is finite, so every kilowatt-hour spent now is one that can't be spent later.</p>
+      <p>The objective weighs two goals that pull against each other:</p>
+      <div class="math">\[ \max \; \lambda \sum_{t}\sum_{s} \frac{W_s\, x_{s,t}}{(1+\alpha)^{t-1}} \;+\; (1-\lambda)\, K\, z^{\min} \]</div>
+      <p>The first term rewards serving important departments, early. The second rewards the worst-served department, so nobody is cut off. The priority dial is \(\lambda\).</p>
+    </div>
+    <div class="col">
+      <h2>Things to try</h2>
+      <ul class="tries">
+        <li><button data-preset="48|55000|1">48 hours, one large generator, most care soonest.</button> Critical care runs at full power for twelve hours. Then the fuel is gone and the building goes dark.</li>
+        <li><button data-preset="48|55000|0">The same, but nobody left in the dark.</button> Critical care holds on for all 48 hours at a fifth to a third of its demand, and the support departments get a trickle.</li>
+        <li><button data-preset="72|165000|0.5">72 hours with a big budget and a balanced priority.</button> Three extra large generators buy a hybrid: full power for the first nine hours, then a steady ration until the grid comes back.</li>
+      </ul>
+      <p class="small">Model, notebook and the full report: <a href="https://github.com/liiiaamm/hospital-energy-optimization">github.com/liiiaamm/hospital-energy-optimization</a>. Solved with HiGHS.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Course project at Comillas ICAI, BSc in Mathematical Engineering and AI. Interactive version by <a href="https://github.com/liiiaamm">Liam Esgueva</a>.</p>
+</footer>
+
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" defer></script>
+<script src="static/sim.js"></script>
+</body>
+</html>
