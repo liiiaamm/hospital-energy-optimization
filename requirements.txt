@@ -1,6 +1,6 @@
 pyomo
+highspy
 matplotlib
 pandas
 numpy
 jupyter
-
